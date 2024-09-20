@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"reflect"
 )
 
@@ -13,39 +14,33 @@ func (s SJON) Marshal(v any) ([]byte, error) {
 	if v == nil {
 		return []byte("null"), nil
 	}
-	bs, err := s.reflectMarshal(reflect.ValueOf(v), 0)
+	buf := bytes.NewBuffer(nil)
+	err := s.reflectMarshal(reflect.ValueOf(v), buf, 0)
 	if err != nil {
 		return nil, err
-	}
-	buf := bytes.NewBuffer(nil)
-	for _, b := range bs {
-		_, err := buf.Write(b)
-		if err != nil {
-			return nil, err
-		}
 	}
 	return buf.Bytes(), nil
 }
 
-func (s SJON) reflectMarshal(v reflect.Value, depth int) ([][]byte, error) {
+func (s SJON) reflectMarshal(v reflect.Value, out io.Writer, depth int) error {
 	if depth > maxDepth {
-		return nil, errors.New("go-sjon: max depth exceeded")
+		return errors.New("go-sjon: max depth exceeded")
 	}
 	m, ok := marshalers[v.Kind()]
 	if !ok {
-		return nil, errors.New(
+		return errors.New(
 			fmt.Sprintf("go-sjon: unexpected kind %q", v.Kind()),
 		)
 	}
-	var next marshalNext = func(v reflect.Value) ([][]byte, error) {
-		return s.reflectMarshal(v, depth+1)
+	var next marshalNext = func(v reflect.Value) error {
+		return s.reflectMarshal(v, out, depth+1)
 	}
-	return m(v, next)
+	return m(v, out, next)
 }
 
-type marshalNext func(reflect.Value) ([][]byte, error)
+type marshalNext func(reflect.Value) error
 
-var marshalers = map[reflect.Kind]func(reflect.Value, marshalNext) ([][]byte, error){
+var marshalers = map[reflect.Kind]func(reflect.Value, io.Writer, marshalNext) error{
 	reflect.Array:      marshalNotSupported,
 	reflect.Slice:      marshalNotSupported,
 	reflect.Chan:       marshalNotSupported,
@@ -73,12 +68,16 @@ var marshalers = map[reflect.Kind]func(reflect.Value, marshalNext) ([][]byte, er
 	reflect.Complex128: marshalNotSupported,
 }
 
-func marshalNotSupported(v reflect.Value, _ marshalNext) ([][]byte, error) {
-	return nil, errors.New(
+func marshalNotSupported(v reflect.Value, _ io.Writer, _ marshalNext) error {
+	return errors.New(
 		fmt.Sprintf("go-json: unsupported kind %q", v.Kind()),
 	)
 }
 
-func marshalBool(v reflect.Value, _ marshalNext) ([][]byte, error) {
-	return [][]byte{[]byte(fmt.Sprintf("%v", v.Bool()))}, nil
+func marshalBool(v reflect.Value, out io.Writer, _ marshalNext) error {
+	_, err := out.Write([]byte(fmt.Sprintf("%v", v.Bool())))
+	if err != nil {
+		return err
+	}
+	return nil
 }
