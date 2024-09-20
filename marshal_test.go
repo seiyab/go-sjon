@@ -51,8 +51,11 @@ func TestMarshalArray(t *testing.T) {
 		expected string
 	}
 	tests := []TestCase{
+		{[]int{}, "[]"},
 		{[]int{1, 2, 3}, "[1,2,3]"},
 		{[]bool{false, true, true, false}, `[false,true,true,false]`},
+		{[0]int{}, "[]"},
+		{[2]int{1, 2}, "[1,2]"},
 	}
 
 	s := sjon.New()

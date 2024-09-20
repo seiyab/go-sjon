@@ -42,8 +42,8 @@ func (s SJON) reflectMarshal(v reflect.Value, out io.Writer, depth int) error {
 type marshalNext func(reflect.Value) error
 
 var marshalers = map[reflect.Kind]func(reflect.Value, io.Writer, marshalNext) error{
-	reflect.Array:      marshalNotSupported,
-	reflect.Slice:      marshalSlice,
+	reflect.Array:      marshalArray,
+	reflect.Slice:      marshalArray,
 	reflect.Chan:       marshalNotSupported,
 	reflect.Interface:  marshalNotSupported,
 	reflect.Pointer:    marshalNotSupported,
@@ -75,7 +75,7 @@ func marshalNotSupported(v reflect.Value, _ io.Writer, _ marshalNext) error {
 	)
 }
 
-func marshalSlice(v reflect.Value, out io.Writer, next marshalNext) error {
+func marshalArray(v reflect.Value, out io.Writer, next marshalNext) error {
 	_, err := out.Write([]byte("["))
 	if err != nil {
 		return err
