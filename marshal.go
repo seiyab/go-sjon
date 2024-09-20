@@ -47,7 +47,7 @@ var marshalers = map[reflect.Kind]func(reflect.Value, io.Writer, marshalNext) er
 	reflect.Chan:       marshalNotSupported,
 	reflect.Interface:  marshalNotSupported,
 	reflect.Pointer:    marshalPointer,
-	reflect.Struct:     marshalNotSupported,
+	reflect.Struct:     marshalStruct,
 	reflect.Map:        marshalNotSupported,
 	reflect.Func:       marshalNotSupported,
 	reflect.Int:        marshalInt,

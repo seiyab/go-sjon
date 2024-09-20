@@ -78,6 +78,40 @@ func TestMarshalArray(t *testing.T) {
 
 }
 
+func TestMarshalStruct(t *testing.T) {
+	type TestCase struct {
+		value    any
+		expected string
+	}
+	tests := []TestCase{
+		{struct{}{}, "{}"},
+		{struct{ A int }{1}, `{"A":1}`},
+		{struct {
+			A int
+			B bool
+		}{1, true}, `{"A":1,"B":true}`},
+		{struct {
+			A int
+			B bool
+			C *int
+		}{1, true, ref(100)}, `{"A":1,"B":true,"C":100}`},
+	}
+
+	s := sjon.New()
+	for _, tt := range tests {
+		t.Run(tt.expected, func(t *testing.T) {
+			actual, err := s.Marshal(tt.value)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if string(actual) != tt.expected {
+				t.Errorf("expected %q, but got %q", tt.expected, string(actual))
+			}
+		})
+	}
+
+}
+
 func ref[T any](v T) *T {
 	return &v
 }
