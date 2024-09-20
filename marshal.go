@@ -55,11 +55,11 @@ var marshalers = map[reflect.Kind]func(reflect.Value, io.Writer, marshalNext) er
 	reflect.Int16:      marshalInt,
 	reflect.Int32:      marshalInt,
 	reflect.Int64:      marshalInt,
-	reflect.Uint:       marshalNotSupported,
-	reflect.Uint8:      marshalNotSupported,
-	reflect.Uint16:     marshalNotSupported,
-	reflect.Uint32:     marshalNotSupported,
-	reflect.Uint64:     marshalNotSupported,
+	reflect.Uint:       marshalUint,
+	reflect.Uint8:      marshalUint,
+	reflect.Uint16:     marshalUint,
+	reflect.Uint32:     marshalUint,
+	reflect.Uint64:     marshalUint,
 	reflect.Uintptr:    marshalNotSupported,
 	reflect.String:     marshalNotSupported,
 	reflect.Bool:       marshalBool,
@@ -100,7 +100,15 @@ func marshalArray(v reflect.Value, out io.Writer, next marshalNext) error {
 }
 
 func marshalInt(v reflect.Value, out io.Writer, _ marshalNext) error {
-	_, err := out.Write([]byte(strconv.Itoa(int(v.Int()))))
+	_, err := out.Write([]byte(strconv.FormatInt(v.Int(), 10)))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func marshalUint(v reflect.Value, out io.Writer, _ marshalNext) error {
+	_, err := out.Write([]byte(strconv.FormatUint(v.Uint(), 10)))
 	if err != nil {
 		return err
 	}
