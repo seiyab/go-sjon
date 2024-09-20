@@ -60,6 +60,7 @@ func TestMarshalArray(t *testing.T) {
 		{[]bool{false, true, true, false}, `[false,true,true,false]`},
 		{[0]int{}, "[]"},
 		{[2]int{1, 2}, "[1,2]"},
+		{[]*int{ref(1), ref(2), ref(3), nil, nil}, "[1,2,3,null,null]"},
 	}
 
 	s := sjon.New()
@@ -75,4 +76,8 @@ func TestMarshalArray(t *testing.T) {
 		})
 	}
 
+}
+
+func ref[T any](v T) *T {
+	return &v
 }

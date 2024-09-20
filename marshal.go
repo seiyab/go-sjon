@@ -46,7 +46,7 @@ var marshalers = map[reflect.Kind]func(reflect.Value, io.Writer, marshalNext) er
 	reflect.Slice:      marshalArray,
 	reflect.Chan:       marshalNotSupported,
 	reflect.Interface:  marshalNotSupported,
-	reflect.Pointer:    marshalNotSupported,
+	reflect.Pointer:    marshalPointer,
 	reflect.Struct:     marshalNotSupported,
 	reflect.Map:        marshalNotSupported,
 	reflect.Func:       marshalNotSupported,
@@ -93,6 +93,17 @@ func marshalArray(v reflect.Value, out io.Writer, next marshalNext) error {
 		}
 	}
 	_, err = out.Write([]byte("]"))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func marshalPointer(v reflect.Value, out io.Writer, next marshalNext) error {
+	if !v.IsNil() {
+		return next(v.Elem())
+	}
+	_, err := out.Write([]byte("null"))
 	if err != nil {
 		return err
 	}
