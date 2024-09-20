@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"strconv"
 )
 
 const maxDepth = 1_000
@@ -42,18 +43,18 @@ type marshalNext func(reflect.Value) error
 
 var marshalers = map[reflect.Kind]func(reflect.Value, io.Writer, marshalNext) error{
 	reflect.Array:      marshalNotSupported,
-	reflect.Slice:      marshalNotSupported,
+	reflect.Slice:      marshalSlice,
 	reflect.Chan:       marshalNotSupported,
 	reflect.Interface:  marshalNotSupported,
 	reflect.Pointer:    marshalNotSupported,
 	reflect.Struct:     marshalNotSupported,
 	reflect.Map:        marshalNotSupported,
 	reflect.Func:       marshalNotSupported,
-	reflect.Int:        marshalNotSupported,
-	reflect.Int8:       marshalNotSupported,
-	reflect.Int16:      marshalNotSupported,
-	reflect.Int32:      marshalNotSupported,
-	reflect.Int64:      marshalNotSupported,
+	reflect.Int:        marshalInt,
+	reflect.Int8:       marshalInt,
+	reflect.Int16:      marshalInt,
+	reflect.Int32:      marshalInt,
+	reflect.Int64:      marshalInt,
 	reflect.Uint:       marshalNotSupported,
 	reflect.Uint8:      marshalNotSupported,
 	reflect.Uint16:     marshalNotSupported,
@@ -72,6 +73,38 @@ func marshalNotSupported(v reflect.Value, _ io.Writer, _ marshalNext) error {
 	return errors.New(
 		fmt.Sprintf("go-json: unsupported kind %q", v.Kind()),
 	)
+}
+
+func marshalSlice(v reflect.Value, out io.Writer, next marshalNext) error {
+	_, err := out.Write([]byte("["))
+	if err != nil {
+		return err
+	}
+	for i := 0; i < v.Len(); i++ {
+		if i > 0 {
+			_, err := out.Write([]byte(","))
+			if err != nil {
+				return err
+			}
+		}
+		err := next(v.Index(i))
+		if err != nil {
+			return err
+		}
+	}
+	_, err = out.Write([]byte("]"))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func marshalInt(v reflect.Value, out io.Writer, _ marshalNext) error {
+	_, err := out.Write([]byte(strconv.Itoa(int(v.Int()))))
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func marshalBool(v reflect.Value, out io.Writer, _ marshalNext) error {
