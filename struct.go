@@ -6,13 +6,17 @@ import (
 	"strconv"
 )
 
-func marshalStruct(_ *Serializer, v reflect.Value, out io.Writer, next marshalNext) error {
+func marshalStruct(s *Serializer, v reflect.Value, out io.Writer, next marshalNext) error {
 	out.Write([]byte("{"))
 	for i := 0; i < v.NumField(); i++ {
 		if i > 0 {
 			out.Write([]byte(","))
 		}
-		out.Write([]byte(strconv.Quote(v.Type().Field(i).Name)))
+		name := v.Type().Field(i).Name
+		if s.KeyNamer != nil {
+			name = s.KeyNamer(name)
+		}
+		out.Write([]byte(strconv.Quote(name)))
 		out.Write([]byte(":"))
 		err := next(v.Field(i))
 		if err != nil {
