@@ -1,9 +1,9 @@
 package sjon
 
-type SJON struct {
+type Serializer struct {
 	KeyNamer func(string) string
 }
 
-func New() SJON {
-	return SJON{}
+func NewSerializer() Serializer {
+	return Serializer{}
 }

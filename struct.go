@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-func marshalStruct(v reflect.Value, out io.Writer, next marshalNext) error {
+func marshalStruct(_ *Serializer, v reflect.Value, out io.Writer, next marshalNext) error {
 	out.Write([]byte("{"))
 	for i := 0; i < v.NumField(); i++ {
 		if i > 0 {

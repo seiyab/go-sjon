@@ -11,7 +11,7 @@ import (
 
 const maxDepth = 1_000
 
-func (s SJON) Marshal(v any) ([]byte, error) {
+func (s Serializer) Marshal(v any) ([]byte, error) {
 	if v == nil {
 		return []byte("null"), nil
 	}
@@ -23,7 +23,7 @@ func (s SJON) Marshal(v any) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (s SJON) reflectMarshal(v reflect.Value, out io.Writer, depth int) error {
+func (s Serializer) reflectMarshal(v reflect.Value, out io.Writer, depth int) error {
 	if depth > maxDepth {
 		return errors.New("go-sjon: max depth exceeded")
 	}
@@ -36,12 +36,12 @@ func (s SJON) reflectMarshal(v reflect.Value, out io.Writer, depth int) error {
 	var next marshalNext = func(v reflect.Value) error {
 		return s.reflectMarshal(v, out, depth+1)
 	}
-	return m(v, out, next)
+	return m(&s, v, out, next)
 }
 
 type marshalNext func(reflect.Value) error
 
-var marshalers = map[reflect.Kind]func(reflect.Value, io.Writer, marshalNext) error{
+var marshalers = map[reflect.Kind]func(*Serializer, reflect.Value, io.Writer, marshalNext) error{
 	reflect.Array:      marshalArray,
 	reflect.Slice:      marshalArray,
 	reflect.Chan:       marshalNotSupported,
@@ -69,13 +69,13 @@ var marshalers = map[reflect.Kind]func(reflect.Value, io.Writer, marshalNext) er
 	reflect.Complex128: marshalNotSupported,
 }
 
-func marshalNotSupported(v reflect.Value, _ io.Writer, _ marshalNext) error {
+func marshalNotSupported(_ *Serializer, v reflect.Value, _ io.Writer, _ marshalNext) error {
 	return errors.New(
 		fmt.Sprintf("go-json: unsupported kind %q", v.Kind()),
 	)
 }
 
-func marshalArray(v reflect.Value, out io.Writer, next marshalNext) error {
+func marshalArray(_ *Serializer, v reflect.Value, out io.Writer, next marshalNext) error {
 	_, err := out.Write([]byte("["))
 	if err != nil {
 		return err
@@ -99,7 +99,7 @@ func marshalArray(v reflect.Value, out io.Writer, next marshalNext) error {
 	return nil
 }
 
-func marshalPointer(v reflect.Value, out io.Writer, next marshalNext) error {
+func marshalPointer(_ *Serializer, v reflect.Value, out io.Writer, next marshalNext) error {
 	if !v.IsNil() {
 		return next(v.Elem())
 	}
@@ -110,7 +110,7 @@ func marshalPointer(v reflect.Value, out io.Writer, next marshalNext) error {
 	return nil
 }
 
-func marshalInt(v reflect.Value, out io.Writer, _ marshalNext) error {
+func marshalInt(_ *Serializer, v reflect.Value, out io.Writer, _ marshalNext) error {
 	_, err := out.Write([]byte(strconv.FormatInt(v.Int(), 10)))
 	if err != nil {
 		return err
@@ -118,7 +118,7 @@ func marshalInt(v reflect.Value, out io.Writer, _ marshalNext) error {
 	return nil
 }
 
-func marshalUint(v reflect.Value, out io.Writer, _ marshalNext) error {
+func marshalUint(_ *Serializer, v reflect.Value, out io.Writer, _ marshalNext) error {
 	_, err := out.Write([]byte(strconv.FormatUint(v.Uint(), 10)))
 	if err != nil {
 		return err
@@ -126,7 +126,7 @@ func marshalUint(v reflect.Value, out io.Writer, _ marshalNext) error {
 	return nil
 }
 
-func marshalBool(v reflect.Value, out io.Writer, _ marshalNext) error {
+func marshalBool(_ *Serializer, v reflect.Value, out io.Writer, _ marshalNext) error {
 	_, err := out.Write([]byte(fmt.Sprintf("%v", v.Bool())))
 	if err != nil {
 		return err

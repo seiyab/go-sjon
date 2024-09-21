@@ -34,7 +34,7 @@ func TestMarshalPrimitive(t *testing.T) {
 		{false, "false"},
 	}
 
-	s := sjon.New()
+	s := sjon.NewSerializer()
 	for _, tt := range tests {
 		t.Run(tt.expected, func(t *testing.T) {
 			actual, err := s.Marshal(tt.value)
@@ -63,7 +63,7 @@ func TestMarshalArray(t *testing.T) {
 		{[]*int{ref(1), ref(2), ref(3), nil, nil}, "[1,2,3,null,null]"},
 	}
 
-	s := sjon.New()
+	s := sjon.NewSerializer()
 	for _, tt := range tests {
 		t.Run(tt.expected, func(t *testing.T) {
 			actual, err := s.Marshal(tt.value)
@@ -97,7 +97,7 @@ func TestMarshalStruct(t *testing.T) {
 		}{1, true, ref(100)}, `{"A":1,"B":true,"C":100}`},
 	}
 
-	s := sjon.New()
+	s := sjon.NewSerializer()
 	for _, tt := range tests {
 		t.Run(tt.expected, func(t *testing.T) {
 			actual, err := s.Marshal(tt.value)
