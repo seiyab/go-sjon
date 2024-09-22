@@ -69,6 +69,36 @@ func FuzzMarshalString(f *testing.F) {
 	})
 }
 
+func FuzzMarshalInt(f *testing.F) {
+	sj := sjon.NewSerializer()
+	f.Add(0)
+	f.Fuzz(func(t *testing.T, i int) {
+		out, err := sj.Marshal(i)
+		require.NoError(t, err)
+
+		expected, err := json.Marshal(i)
+		require.NoError(t, err)
+
+		tq.Equal(t, string(expected), string(out))
+		tq.Equal(t, expected, out)
+	})
+}
+
+func FuzzMarshalUint(f *testing.F) {
+	sj := sjon.NewSerializer()
+	f.Add(uint(0))
+	f.Fuzz(func(t *testing.T, i uint) {
+		out, err := sj.Marshal(i)
+		require.NoError(t, err)
+
+		expected, err := json.Marshal(i)
+		require.NoError(t, err)
+
+		tq.Equal(t, string(expected), string(out))
+		tq.Equal(t, expected, out)
+	})
+}
+
 func TestMarshalArray(t *testing.T) {
 	type TestCase struct {
 		value    any
