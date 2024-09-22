@@ -4,16 +4,30 @@ import (
 	"io"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 func marshalStruct(s *Serializer, v reflect.Value, out io.Writer, next marshalNext) error {
 	out.Write([]byte("{"))
+	isFirst := true
 	for i := 0; i < v.NumField(); i++ {
-		if i > 0 {
+		f := v.Type().Field(i)
+		tag := f.Tag.Get("json")
+		if tag == "-" {
+			continue
+		}
+		if !isFirst {
 			out.Write([]byte(","))
+		} else {
+			isFirst = false
 		}
 		name := v.Type().Field(i).Name
-		if s.KeyNamer != nil {
+		if tag != "" {
+			tagItems := strings.Split(tag, ",")
+			if tagItems[0] != "" {
+				name = tagItems[0]
+			}
+		} else if s.KeyNamer != nil {
 			name = s.KeyNamer(name)
 		}
 		out.Write([]byte(strconv.Quote(name)))
