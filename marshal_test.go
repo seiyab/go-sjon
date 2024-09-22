@@ -30,6 +30,9 @@ func TestMarshalPrimitive(t *testing.T) {
 		{uint16(math.MaxUint16), "65535"},
 		{uint32(math.MaxUint32), "4294967295"},
 		{uint64(math.MaxUint64), "18446744073709551615"},
+		{"abc", `"abc"`},
+		{"", `""`},
+		{"\n", `"\n"`},
 		{true, "true"},
 		{false, "false"},
 	}
