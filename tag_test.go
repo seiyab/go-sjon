@@ -35,4 +35,15 @@ func TestSerializerMarshal_StructTag(t *testing.T) {
 		require.NoError(t, err)
 		tq.Equal(t, `{"Foo":1,"abc":2}`, string(actual))
 	})
+
+	t.Run("omit empty", func(t *testing.T) {
+		type OmitEmptyTest struct {
+			Foo int
+			Bar int `json:",omitempty"`
+			Baz int `json:"abc,omitempty"`
+		}
+		actual, err := sj.Marshal(OmitEmptyTest{})
+		require.NoError(t, err)
+		tq.Equal(t, `{"Foo":0}`, string(actual))
+	})
 }
