@@ -10,27 +10,29 @@ import (
 func TestSerializerMarshal_StructTag(t *testing.T) {
 	sj := sjon.NewSerializer()
 
-	type HyphenTest struct {
-		Foo int
-		Bar int `json:"-"`
-	}
-	actual, err := sj.Marshal(HyphenTest{1, 2})
-	require.NoError(t, err)
-	tq.Equal(t, `{"Foo":1}`, string(actual))
+	t.Run("key name by struct tag", func(t *testing.T) {
+		type HyphenTest struct {
+			Foo int
+			Bar int `json:"-"`
+		}
+		actual, err := sj.Marshal(HyphenTest{1, 2})
+		require.NoError(t, err)
+		tq.Equal(t, `{"Foo":1}`, string(actual))
 
-	type HyphenKeyTest struct {
-		Foo int
-		Bar int `json:"-,"`
-	}
-	actual, err = sj.Marshal(HyphenKeyTest{1, 2})
-	require.NoError(t, err)
-	tq.Equal(t, `{"Foo":1,"-":2}`, string(actual))
+		type HyphenKeyTest struct {
+			Foo int
+			Bar int `json:"-,"`
+		}
+		actual, err = sj.Marshal(HyphenKeyTest{1, 2})
+		require.NoError(t, err)
+		tq.Equal(t, `{"Foo":1,"-":2}`, string(actual))
 
-	type NameTest struct {
-		Foo int
-		Bar int `json:"abc"`
-	}
-	actual, err = sj.Marshal(NameTest{1, 2})
-	require.NoError(t, err)
-	tq.Equal(t, `{"Foo":1,"abc":2}`, string(actual))
+		type NameTest struct {
+			Foo int
+			Bar int `json:"abc"`
+		}
+		actual, err = sj.Marshal(NameTest{1, 2})
+		require.NoError(t, err)
+		tq.Equal(t, `{"Foo":1,"abc":2}`, string(actual))
+	})
 }
