@@ -1,10 +1,12 @@
 package sjon_test
 
 import (
+	"encoding/json"
 	"math"
 	"testing"
 
 	"github.com/seiyab/go-sjon"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMarshalPrimitive(t *testing.T) {
@@ -50,6 +52,21 @@ func TestMarshalPrimitive(t *testing.T) {
 		})
 	}
 
+}
+
+func FuzzMarshalString(f *testing.F) {
+	sj := sjon.NewSerializer()
+	f.Add("")
+	f.Fuzz(func(t *testing.T, s string) {
+		out, err := sj.Marshal(s)
+		require.NoError(t, err)
+
+		expected, err := json.Marshal(s)
+		require.NoError(t, err)
+
+		tq.Equal(t, string(expected), string(out))
+		tq.Equal(t, expected, out)
+	})
 }
 
 func TestMarshalArray(t *testing.T) {
