@@ -2,6 +2,7 @@ package sjon_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"math"
 	"testing"
 
@@ -37,6 +38,12 @@ func TestMarshalPrimitive(t *testing.T) {
 		{"\n", `"\n"`},
 		{true, "true"},
 		{false, "false"},
+		{float32(0), "0"},
+		{float32(1.23), "1.23"},
+		{float32(-1.23), "-1.23"},
+		{float64(0), "0"},
+		{float64(1.23), "1.23"},
+		{float64(-1.23), "-1.23"},
 	}
 
 	s := sjon.NewSerializer()
@@ -51,7 +58,21 @@ func TestMarshalPrimitive(t *testing.T) {
 			}
 		})
 	}
+}
 
+func TestMarshalInvalidPrimitive(t *testing.T) {
+	ts := []any{
+		math.NaN(),
+		math.Inf(-1),
+		math.Inf(1),
+	}
+	s := sjon.NewSerializer()
+	for _, tt := range ts {
+		t.Run(fmt.Sprintf("%v", tt), func(t *testing.T) {
+			_, err := s.Marshal(tt)
+			require.Error(t, err)
+		})
+	}
 }
 
 func FuzzMarshalString(f *testing.F) {
@@ -88,6 +109,36 @@ func FuzzMarshalUint(f *testing.F) {
 	sj := sjon.NewSerializer()
 	f.Add(uint(0))
 	f.Fuzz(func(t *testing.T, i uint) {
+		out, err := sj.Marshal(i)
+		require.NoError(t, err)
+
+		expected, err := json.Marshal(i)
+		require.NoError(t, err)
+
+		tq.Equal(t, string(expected), string(out))
+		tq.Equal(t, expected, out)
+	})
+}
+
+func FuzzMarshalFloat32(f *testing.F) {
+	sj := sjon.NewSerializer()
+	f.Add(float32(0))
+	f.Fuzz(func(t *testing.T, i float32) {
+		out, err := sj.Marshal(i)
+		require.NoError(t, err)
+
+		expected, err := json.Marshal(i)
+		require.NoError(t, err)
+
+		tq.Equal(t, string(expected), string(out))
+		tq.Equal(t, expected, out)
+	})
+}
+
+func FuzzMarshalFloat64(f *testing.F) {
+	sj := sjon.NewSerializer()
+	f.Add(float64(0))
+	f.Fuzz(func(t *testing.T, i float64) {
 		out, err := sj.Marshal(i)
 		require.NoError(t, err)
 

@@ -64,8 +64,8 @@ var marshalers = map[reflect.Kind]func(*Serializer, reflect.Value, io.Writer, ma
 	reflect.Uintptr:    marshalNotSupported,
 	reflect.String:     marshalString,
 	reflect.Bool:       marshalBool,
-	reflect.Float32:    marshalNotSupported,
-	reflect.Float64:    marshalNotSupported,
+	reflect.Float32:    marshalFloat[float32],
+	reflect.Float64:    marshalFloat[float64],
 	reflect.Complex64:  marshalNotSupported,
 	reflect.Complex128: marshalNotSupported,
 }
@@ -141,6 +141,18 @@ func marshalString(_ *Serializer, v reflect.Value, out io.Writer, _ marshalNext)
 
 func marshalBool(_ *Serializer, v reflect.Value, out io.Writer, _ marshalNext) error {
 	_, err := out.Write([]byte(fmt.Sprintf("%v", v.Bool())))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func marshalFloat[T ~float32 | float64](_ *Serializer, v reflect.Value, out io.Writer, _ marshalNext) error {
+	b, err := json.Marshal(T(v.Float()))
+	if err != nil {
+		return err
+	}
+	_, err = out.Write(b)
 	if err != nil {
 		return err
 	}
