@@ -61,7 +61,7 @@ var marshalers = map[reflect.Kind]func(*Serializer, reflect.Value, io.Writer, ma
 	reflect.Uint32:     marshalUint,
 	reflect.Uint64:     marshalUint,
 	reflect.Uintptr:    marshalNotSupported,
-	reflect.String:     marshalNotSupported,
+	reflect.String:     marshalString,
 	reflect.Bool:       marshalBool,
 	reflect.Float32:    marshalNotSupported,
 	reflect.Float64:    marshalNotSupported,
@@ -120,6 +120,14 @@ func marshalInt(_ *Serializer, v reflect.Value, out io.Writer, _ marshalNext) er
 
 func marshalUint(_ *Serializer, v reflect.Value, out io.Writer, _ marshalNext) error {
 	_, err := out.Write([]byte(strconv.FormatUint(v.Uint(), 10)))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func marshalString(_ *Serializer, v reflect.Value, out io.Writer, _ marshalNext) error {
+	_, err := out.Write([]byte(fmt.Sprintf("%q", v.String())))
 	if err != nil {
 		return err
 	}

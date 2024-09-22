@@ -45,5 +45,38 @@ func TestSerializerMarshal_StructTag(t *testing.T) {
 		actual, err := sj.Marshal(OmitEmptyTest{})
 		require.NoError(t, err)
 		tq.Equal(t, `{"Foo":0}`, string(actual))
+
+		type OmitEmptyForVariousTypesTest struct {
+			A int            `json:",omitempty"`
+			B bool           `json:",omitempty"`
+			C string         `json:",omitempty"`
+			D []int          `json:",omitempty"`
+			E map[string]int `json:",omitempty"`
+			F *int           `json:",omitempty"`
+			G any            `json:",omitempty"`
+			H *any           `json:",omitempty"`
+			I OmitEmptyTest  `json:",omitempty"`
+			J *OmitEmptyTest `json:",omitempty"`
+		}
+
+		actual, err = sj.Marshal(OmitEmptyForVariousTypesTest{})
+		require.NoError(t, err)
+		tq.Equal(t, `{"I":{"Foo":0}}`, string(actual))
+
+		t.Skip("TODO: implement various types")
+		actual, err = sj.Marshal(&OmitEmptyForVariousTypesTest{
+			A: 1,
+			B: true,
+			C: "abc",
+			D: []int{1, 2},
+			E: map[string]int{"a": 1},
+			F: new(int),
+			G: 1,
+			H: new(any),
+			I: OmitEmptyTest{1, 2, 3},
+			J: &OmitEmptyTest{1, 2, 3},
+		})
+		require.NoError(t, err)
+		tq.Equal(t, `{"A":1,"B":true,"C":"abc","D":[1,2],"E":{"a":1},"F":0,"G":1,"H":null,"I":{"Foo":1,"Bar":2,"Baz":3},"J":{"Foo":1,"Bar":2,"Baz":3}}`, string(actual))
 	})
 }
