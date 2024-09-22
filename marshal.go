@@ -2,6 +2,7 @@ package sjon
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -127,7 +128,11 @@ func marshalUint(_ *Serializer, v reflect.Value, out io.Writer, _ marshalNext) e
 }
 
 func marshalString(_ *Serializer, v reflect.Value, out io.Writer, _ marshalNext) error {
-	_, err := out.Write([]byte(fmt.Sprintf("%q", v.String())))
+	b, err := json.Marshal(v.String())
+	if err != nil {
+		return err
+	}
+	_, err = out.Write(b)
 	if err != nil {
 		return err
 	}
