@@ -34,7 +34,7 @@ func marshalStruct(s *Serializer, v reflect.Value, out io.Writer, next marshalNe
 		}
 		out.Write([]byte(strconv.Quote(name)))
 		out.Write([]byte(":"))
-		err := next(v.Field(i))
+		err := next(v.Field(i), out)
 		if err != nil {
 			return err
 		}
