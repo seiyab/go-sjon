@@ -224,6 +224,7 @@ func TestMarshalMap(t *testing.T) {
 		{map[string]int{"a": 1, "b": 2}, `{"a":1,"b":2}`},
 		{map[string]*int{"a": ref(1), "b": ref(2), "c": nil}, `{"a":1,"b":2,"c":null}`},
 		{map[string]any{"a": 1, "b": "abc", "c": true}, `{"a":1,"b":"abc","c":true}`},
+		{map[int]int{0: 0, 1: 1}, `{"0":0,"1":1}`},
 	}
 
 	s := sjon.NewSerializer()

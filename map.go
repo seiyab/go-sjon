@@ -2,10 +2,11 @@ package sjon
 
 import (
 	"bytes"
-	"errors"
 	"io"
 	"reflect"
 	"sort"
+
+	"github.com/pkg/errors"
 )
 
 type printedMapKey struct {
@@ -54,9 +55,28 @@ func printMapKeys(v reflect.Value, next marshalNext) ([]printedMapKey, error) {
 	printedToPK := make(map[string]printedMapKey)
 	for _, key := range keys {
 		buf := bytes.NewBuffer(nil)
-		err := next(key, buf)
-		if err != nil {
-			return nil, err
+		switch key.Kind() {
+		case reflect.String:
+			err := next(key, buf)
+			if err != nil {
+				return nil, err
+			}
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			_, err := buf.Write([]byte{'"'})
+			if err != nil {
+				return nil, err
+			}
+			err = next(key, buf)
+			if err != nil {
+				return nil, err
+			}
+			_, err = buf.Write([]byte{'"'})
+			if err != nil {
+				return nil, err
+			}
+		default:
+			return nil, errors.Errorf("go-sjon: unsupported map key type %q", key.Kind())
 		}
 		bs := buf.Bytes()
 		if _, ok := printedToPK[string(bs)]; ok {
