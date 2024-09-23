@@ -10,6 +10,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type MarshalTestCase struct {
+	value    any
+	expected string
+}
+
 func TestMarshalPrimitive(t *testing.T) {
 	type TestCase struct {
 		value    any
@@ -210,9 +215,45 @@ func TestMarshalStruct(t *testing.T) {
 			}
 		})
 	}
+}
 
+func TestMarshalMap(t *testing.T) {
+	tests := []MarshalTestCase{
+		{map[string]int{}, "{}"},
+		{map[string]int{"a": 1}, `{"a":1}`},
+		{map[string]int{"a": 1, "b": 2}, `{"a":1,"b":2}`},
+		{map[string]*int{"a": ref(1), "b": ref(2), "c": nil}, `{"a":1,"b":2,"c":null}`},
+		{map[string]any{"a": 1, "b": "abc", "c": true}, `{"a":1,"b":"abc","c":true}`},
+	}
+
+	s := sjon.NewSerializer()
+	for _, tt := range tests {
+		t.Run(tt.expected, func(t *testing.T) {
+			actual, err := s.Marshal(tt.value)
+			require.NoError(t, err)
+			tq.Equal(t, tt.expected, string(actual))
+		})
+
+		cn := fmt.Sprintf("compare with encoding/json - %s", tt.expected)
+		t.Run(cn, func(t *testing.T) {
+			compareStandard(t, tt.value)
+		})
+	}
 }
 
 func ref[T any](v T) *T {
 	return &v
+}
+
+func compareStandard(t *testing.T, v any) {
+	t.Helper()
+	actual, err := json.Marshal(v)
+	require.NoError(t, err)
+
+	s := sjon.NewSerializer()
+	expected, err := s.Marshal(v)
+	require.NoError(t, err)
+
+	tq.Equal(t, string(actual), string(expected))
+	tq.Equal(t, actual, expected)
 }
