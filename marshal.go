@@ -32,13 +32,13 @@ func (s Serializer) reflectMarshal(v reflect.Value, out io.Writer, depth int) er
 	if !ok {
 		return fmt.Errorf("go-sjon: unexpected kind %q", v.Kind())
 	}
-	var next marshalNext = func(v reflect.Value) error {
-		return s.reflectMarshal(v, out, depth+1)
+	var next marshalNext = func(v reflect.Value, w io.Writer) error {
+		return s.reflectMarshal(v, w, depth+1)
 	}
 	return m(&s, v, out, next)
 }
 
-type marshalNext func(reflect.Value) error
+type marshalNext func(reflect.Value, io.Writer) error
 
 var marshalers = map[reflect.Kind]func(*Serializer, reflect.Value, io.Writer, marshalNext) error{
 	reflect.Array:      marshalArray,
@@ -47,7 +47,7 @@ var marshalers = map[reflect.Kind]func(*Serializer, reflect.Value, io.Writer, ma
 	reflect.Interface:  marshalNotSupported,
 	reflect.Pointer:    marshalPointer,
 	reflect.Struct:     marshalStruct,
-	reflect.Map:        marshalNotSupported,
+	reflect.Map:        marshalMap,
 	reflect.Func:       marshalNotSupported,
 	reflect.Int:        marshalInt,
 	reflect.Int8:       marshalInt,
@@ -84,7 +84,7 @@ func marshalArray(_ *Serializer, v reflect.Value, out io.Writer, next marshalNex
 				return err
 			}
 		}
-		err := next(v.Index(i))
+		err := next(v.Index(i), out)
 		if err != nil {
 			return err
 		}
@@ -98,7 +98,7 @@ func marshalArray(_ *Serializer, v reflect.Value, out io.Writer, next marshalNex
 
 func marshalPointer(_ *Serializer, v reflect.Value, out io.Writer, next marshalNext) error {
 	if !v.IsNil() {
-		return next(v.Elem())
+		return next(v.Elem(), out)
 	}
 	_, err := out.Write([]byte("null"))
 	if err != nil {
