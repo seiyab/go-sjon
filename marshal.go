@@ -44,7 +44,7 @@ var marshalers = map[reflect.Kind]func(*Serializer, reflect.Value, io.Writer, ma
 	reflect.Array:      marshalArray,
 	reflect.Slice:      marshalArray,
 	reflect.Chan:       marshalNotSupported,
-	reflect.Interface:  marshalNotSupported,
+	reflect.Interface:  marshalPointer,
 	reflect.Pointer:    marshalPointer,
 	reflect.Struct:     marshalStruct,
 	reflect.Map:        marshalMap,
