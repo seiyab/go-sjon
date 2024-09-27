@@ -33,3 +33,22 @@ func TestJSONMarshaler(t *testing.T) {
 		compareStandard(t, d)
 	})
 }
+
+func TestTextMarshaler(t *testing.T) {
+	s := sjon.NewSerializer()
+	t.Run("TextMarshaler", func(t *testing.T) {
+		v := TxtMsr{"abc"}
+		actual, err := s.Marshal(v)
+		require.NoError(t, err)
+		tq.Equal(t, `"abc"`, string(actual))
+		compareStandard(t, v)
+	})
+}
+
+type TxtMsr struct {
+	A string
+}
+
+func (s TxtMsr) MarshalText() ([]byte, error) {
+	return []byte(s.A), nil
+}
