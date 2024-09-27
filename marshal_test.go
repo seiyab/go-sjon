@@ -255,6 +255,8 @@ func compareStandard(t *testing.T, v any) {
 	expected, err := s.Marshal(v)
 	require.NoError(t, err)
 
-	tq.Equal(t, string(actual), string(expected))
+	if !tq.Equal(t, string(actual), string(expected)) {
+		t.FailNow()
+	}
 	tq.Equal(t, actual, expected)
 }

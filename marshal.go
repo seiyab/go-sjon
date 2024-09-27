@@ -28,6 +28,18 @@ func (s Serializer) reflectMarshal(v reflect.Value, out io.Writer, depth int) er
 	if depth > maxDepth {
 		return errors.New("go-sjon: max depth exceeded")
 	}
+	if shouldMarshalWithMethod(v) {
+		b, err := marshalWithMethod(v)
+		if err != nil {
+			return err
+		}
+		_, err = out.Write(b)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
 	m, ok := marshalers[v.Kind()]
 	if !ok {
 		return errors.New(
