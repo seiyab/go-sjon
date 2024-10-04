@@ -19,8 +19,8 @@ var tq = teq.New()
 
 func TestSerializerKeyNamer(t *testing.T) {
 	t.Run("lowerCamel", func(t *testing.T) {
-		sj := sjon.NewSerializer()
-		sj.KeyNamer = strcase.ToLowerCamel
+		sj := sjon.NewSerializer().
+			WithStructKeyNamer(strcase.ToLowerCamel)
 
 		actual, err := sj.Marshal(Fixture{
 			Foo:       1,

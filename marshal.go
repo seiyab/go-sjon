@@ -30,9 +30,7 @@ func (s Serializer) reflectMarshal(v reflect.Value, out io.Writer, depth int) er
 	}
 	m, ok := marshalers[v.Kind()]
 	if !ok {
-		return errors.New(
-			fmt.Sprintf("go-sjon: unexpected kind %q", v.Kind()),
-		)
+		return fmt.Errorf("go-sjon: unexpected kind %q", v.Kind())
 	}
 	var next marshalNext = func(v reflect.Value) error {
 		return s.reflectMarshal(v, out, depth+1)
@@ -71,9 +69,7 @@ var marshalers = map[reflect.Kind]func(*Serializer, reflect.Value, io.Writer, ma
 }
 
 func marshalNotSupported(_ *Serializer, v reflect.Value, _ io.Writer, _ marshalNext) error {
-	return errors.New(
-		fmt.Sprintf("go-json: unsupported kind %q", v.Kind()),
-	)
+	return fmt.Errorf("go-json: unsupported kind %q", v.Kind())
 }
 
 func marshalArray(_ *Serializer, v reflect.Value, out io.Writer, next marshalNext) error {

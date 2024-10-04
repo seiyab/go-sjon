@@ -29,8 +29,8 @@ func marshalStruct(s *Serializer, v reflect.Value, out io.Writer, next marshalNe
 		name := v.Type().Field(i).Name
 		if tagItems[0] != "" {
 			name = tagItems[0]
-		} else if s.KeyNamer != nil {
-			name = s.KeyNamer(name)
+		} else if s.structKeyNamer != nil {
+			name = s.structKeyNamer(name)
 		}
 		out.Write([]byte(strconv.Quote(name)))
 		out.Write([]byte(":"))
