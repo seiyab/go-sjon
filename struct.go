@@ -12,6 +12,9 @@ func marshalStruct(s *Serializer, v reflect.Value, out io.Writer, next marshalNe
 	isFirst := true
 	for i := 0; i < v.NumField(); i++ {
 		f := v.Type().Field(i)
+		if !f.IsExported() {
+			continue
+		}
 		tag := f.Tag.Get("json")
 		if tag == "-" {
 			continue

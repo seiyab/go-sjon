@@ -196,6 +196,10 @@ func TestMarshalStruct(t *testing.T) {
 			B bool
 			C *int
 		}{1, true, ref(100)}, `{"A":1,"B":true,"C":100}`},
+		{struct {
+			D string
+			e string
+		}{"abc", "def"}, `{"D":"abc"}`},
 	}
 
 	s := sjon.NewSerializer()
