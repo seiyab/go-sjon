@@ -63,7 +63,6 @@ func TestSerializerMarshal_StructTag(t *testing.T) {
 		require.NoError(t, err)
 		tq.Equal(t, `{"I":{"Foo":0}}`, string(actual))
 
-		t.Skip("TODO: implement various types")
 		actual, err = sj.Marshal(&OmitEmptyForVariousTypesTest{
 			A: 1,
 			B: true,
@@ -77,6 +76,6 @@ func TestSerializerMarshal_StructTag(t *testing.T) {
 			J: &OmitEmptyTest{1, 2, 3},
 		})
 		require.NoError(t, err)
-		tq.Equal(t, `{"A":1,"B":true,"C":"abc","D":[1,2],"E":{"a":1},"F":0,"G":1,"H":null,"I":{"Foo":1,"Bar":2,"Baz":3},"J":{"Foo":1,"Bar":2,"Baz":3}}`, string(actual))
+		tq.Equal(t, `{"A":1,"B":true,"C":"abc","D":[1,2],"E":{"a":1},"F":0,"G":1,"H":null,"I":{"Foo":1,"Bar":2,"abc":3},"J":{"Foo":1,"Bar":2,"abc":3}}`, string(actual))
 	})
 }
