@@ -9,11 +9,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-var (
-	jsonMarshalerType = reflect.TypeOf((*json.Marshaler)(nil)).Elem()
-	textMarshalerType = reflect.TypeOf((*encoding.TextMarshaler)(nil)).Elem()
-)
-
 func marshalWithMarshalJSON(v reflect.Value, out io.Writer) (bool, error) {
 	return marshalWithMethod(v, out, func(v json.Marshaler) ([]byte, error) {
 		return v.MarshalJSON()
