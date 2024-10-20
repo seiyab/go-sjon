@@ -55,11 +55,8 @@ func printMapKeys(s *Serializer, v reflect.Value, next marshalNext) ([]printedMa
 	printedToPK := make(map[string]printedMapKey)
 	for _, originalKey := range keys {
 		key := originalKey
-		for {
-			replacer, ok := s.replacers[key.Type()]
-			if !ok {
-				break
-			}
+		replacer, ok := s.replacers[key.Type()]
+		if ok {
 			key = replacer(key)
 		}
 		buf := bytes.NewBuffer(nil)
