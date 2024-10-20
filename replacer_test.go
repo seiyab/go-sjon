@@ -35,7 +35,6 @@ func TestReplacer(t *testing.T) {
 	})
 
 	t.Run("map", func(t *testing.T) {
-		t.Skip()
 		m := map[time.Time]time.Time{
 			time.Date(2021, 2, 3, 4, 5, 6, 7, time.UTC): time.Date(2022, 3, 4, 5, 6, 7, 8, time.UTC),
 		}

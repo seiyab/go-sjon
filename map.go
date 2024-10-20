@@ -14,12 +14,12 @@ type printedMapKey struct {
 	printed []byte
 }
 
-func marshalMap(_ *Serializer, v reflect.Value, out io.Writer, next marshalNext) error {
+func marshalMap(s *Serializer, v reflect.Value, out io.Writer, next marshalNext) error {
 	_, err := out.Write([]byte("{"))
 	if err != nil {
 		return err
 	}
-	pmks, err := printMapKeys(v, next)
+	pmks, err := printMapKeys(s, v, next)
 	if err != nil {
 		return err
 	}
@@ -50,10 +50,18 @@ func marshalMap(_ *Serializer, v reflect.Value, out io.Writer, next marshalNext)
 	return nil
 }
 
-func printMapKeys(v reflect.Value, next marshalNext) ([]printedMapKey, error) {
+func printMapKeys(s *Serializer, v reflect.Value, next marshalNext) ([]printedMapKey, error) {
 	keys := v.MapKeys()
 	printedToPK := make(map[string]printedMapKey)
-	for _, key := range keys {
+	for _, originalKey := range keys {
+		key := originalKey
+		for {
+			replacer, ok := s.replacers[key.Type()]
+			if !ok {
+				break
+			}
+			key = replacer(key)
+		}
 		buf := bytes.NewBuffer(nil)
 		switch key.Kind() {
 		case reflect.String:
@@ -83,7 +91,7 @@ func printMapKeys(v reflect.Value, next marshalNext) ([]printedMapKey, error) {
 			// TODO: consider priority and handle correctly
 			return nil, errors.New("go-sjon: duplicate key")
 		}
-		printedToPK[string(bs)] = printedMapKey{key, bs}
+		printedToPK[string(bs)] = printedMapKey{originalKey, bs}
 	}
 	pks := make([]printedMapKey, 0, len(keys))
 	for _, v := range printedToPK {
