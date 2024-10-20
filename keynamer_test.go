@@ -2,6 +2,7 @@ package sjon_test
 
 import (
 	"testing"
+	"fmt"
 
 	"github.com/iancoleman/strcase"
 	"github.com/seiyab/go-sjon"
@@ -30,4 +31,21 @@ func TestSerializerKeyNamer(t *testing.T) {
 		require.NoError(t, err)
 		tq.Equal(t, `{"foo":1,"fooBar":true,"fooBarBaz":[1,2,3]}`, string(actual))
 	})
+}
+
+func ExampleStructKeyNamer() {
+	type User struct {
+		FirstName string
+		LastName string
+	}
+
+	s := sjon.NewSerializer().
+		With(sjon.StructKeyNamer(strcase.ToLowerCamel))
+		
+	b, _ := s.Marshal(User{
+		FirstName: "Betty",
+		LastName: "Miller",
+	})
+	fmt.Println(string(b))
+	// Output: {"firstName":"Betty","lastName":"Miller"}
 }

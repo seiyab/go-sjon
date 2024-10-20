@@ -1,6 +1,7 @@
 package sjon_test
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -43,4 +44,19 @@ func TestReplacer(t *testing.T) {
 
 		tq.Equal(t, `{"2021-02-03":"2022-03-04"}`, string(actual))
 	})
+}
+
+func ExampleReplacer() {
+	s := sjon.NewSerializer().
+		With(sjon.Replacer(func(d time.Time) string {
+			return d.Format("2006-01-02")
+		}))
+		
+	b, _ := s.Marshal([]time.Time{
+			time.Date(2024, 10, 20, 1, 2, 3, 4, time.UTC),
+			time.Date(2024, 10, 21, 1, 2, 3, 4, time.UTC),
+			time.Date(2024, 10, 22, 1, 2, 3, 4, time.UTC),
+		})
+	fmt.Println(string(b))
+	// Output: ["2024-10-20","2024-10-21","2024-10-22"]
 }
